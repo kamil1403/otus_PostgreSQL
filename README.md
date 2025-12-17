@@ -41,9 +41,27 @@
 # vi: set ft=ruby :
 
 MACHINES = {
-  :node1 => { :box_name => "ubuntu/jammy64", :vm_name => "node1", :cpus => 2, :memory => 1024, :ip => "192.168.57.11" },
-  :node2 => { :box_name => "ubuntu/jammy64", :vm_name => "node2", :cpus => 2, :memory => 1024, :ip => "192.168.57.12" },
-  :barman => { :box_name => "ubuntu/jammy64", :vm_name => "barman", :cpus => 1, :memory => 1024, :ip => "192.168.57.13" },
+  :node1 => {
+        :box_name => "ubuntu/jammy64",
+        :vm_name => "node1",
+        :cpus => 2,
+        :memory => 1024,
+        :ip => "192.168.57.11",
+  },
+  :node2 => {
+        :box_name => "ubuntu/jammy64",
+        :vm_name => "node2",
+        :cpus => 2,
+        :memory => 1024,
+        :ip => "192.168.57.12",
+  },
+  :barman => {
+        :box_name => "ubuntu/jammy64",
+        :vm_name => "barman",
+        :cpus => 1,
+        :memory => 1024,
+        :ip => "192.168.57.13",
+  },
 }
 
 Vagrant.configure("2") do |config|
@@ -52,11 +70,13 @@ Vagrant.configure("2") do |config|
       box.vm.box = boxconfig[:box_name]
       box.vm.hostname = boxconfig[:vm_name]
       box.vm.network "private_network", ip: boxconfig[:ip]
+      
       box.vm.provider "virtualbox" do |v|
         v.memory = boxconfig[:memory]
         v.cpus = boxconfig[:cpus]
         v.name = "pg_#{boxconfig[:vm_name]}" 
       end
+      
     end
   end
 end
