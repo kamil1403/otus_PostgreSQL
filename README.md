@@ -30,10 +30,9 @@
 
 <a id="one"></a>
 ## 🧰 Шаг 1 - Инфраструктура
-**Master:** 192.168.57.11 (`node1`)
-**Slave:** 192.168.57.12 (`node2`)
-**Barman:** 192.168.57.13 (`barman`)
-
+**Master:** 192.168.57.11 (`node1`)   
+**Slave:** 192.168.57.12 (`node2`)   
+**Barman:** 192.168.57.13 (`barman`)   
 Развертывание ВМ описано в `Vagrantfile`.
 
 ```bash
@@ -83,30 +82,26 @@ end
 ```
 
 <a id="two"></a>
-🛠️ Шаг 2 - Настройка Ansible
-Конфигурация выполняется через Ansible. Особенность: Используется PostgreSQL 14, поэтому вместо устаревшего recovery.conf применяется механизм standby.signal.
+## 🧰 Шаг 2 - Настройка Ansible
+Конфигурация выполняется через Ansible.
 Запуск:
 ```bash
 cd ansible
 ansible-playbook -i hosts provision.yml
-Структура ролей:
-install_postgres: Установка пакетов.
-postgres_replication: Настройка Master, создание юзера репликации, клонирование данных на Slave (pg_basebackup -R).
-install_barman: Настройка сервера бэкапов, SSH-ключей, .pgpass и конфигурации стриминга.
 ```
 
 <a id="three"></a>
-🔍 Шаг 3 - Проверка
+## 🧰 Шаг 3 - Проверка
 1. Проверка репликации (на Master):
 ```bash
 vagrant ssh node1
-sudo -u postgres psql -c "select * from pg_stat_replication;"
+sudo -u postgres psql -c "select usename, application_name, client_addr, state, sync_state from pg_stat_replication;"
 Ожидаем: state = streaming
 ```
 2. Проверка Barman (на сервере Backup):
 ```bash
 vagrant ssh barman
 sudo su - barman
-barman check node1
-barman backup node1
+barman check node1 && barman list-backup node1
+Ожидаем: OK по всем пунктам и наличие бэкапа в списке.
 ```
