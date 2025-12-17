@@ -1,0 +1,5 @@
+---
+barman_user: 'barman'
+barman_password: 'Otus2022!'
+master_ip: '192.168.57.11'
+barman_ip: '192.168.57.13'

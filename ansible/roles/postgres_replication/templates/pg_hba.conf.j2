@@ -1,0 +1,21 @@
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# Local
+local   all             all                                     peer
+
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            scram-sha-256
+host    all             all             0.0.0.0/0               scram-sha-256
+
+# Replication connections
+local   replication     all                                     peer
+host    replication     all             127.0.0.1/32            scram-sha-256
+host    replication     all             ::1/128                 scram-sha-256
+
+# Разрешаем репликацию для node1, node2 и barman
+host    replication     replication     {{ slave_ip }}/32       scram-sha-256
+host    replication     replication     {{ master_ip }}/32      scram-sha-256
+host    replication     barman          {{ barman_ip }}/32      scram-sha-256
+
+# Разрешаем подключение пользователю barman к базе postgres
+host    postgres        barman          {{ barman_ip }}/32      scram-sha-256

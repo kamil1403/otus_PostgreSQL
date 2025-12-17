@@ -1,0 +1,15 @@
+---
+- name: Install PostgreSQL 14
+  apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - postgresql-client
+    state: present
+    update_cache: true
+
+- name: Enable and start PostgreSQL
+  service:
+    name: postgresql
+    state: started
+    enabled: true

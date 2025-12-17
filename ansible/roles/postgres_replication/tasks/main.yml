@@ -1,0 +1,68 @@
+- name: Copy postgresql.conf
+  template:
+    src: postgresql.conf.j2
+    dest: /etc/postgresql/14/main/postgresql.conf
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  notify: restart_postgres
+
+- name: Copy pg_hba.conf
+  template:
+    src: pg_hba.conf.j2
+    dest: /etc/postgresql/14/main/pg_hba.conf
+    owner: postgres
+    group: postgres
+    mode: '0640'
+  notify: restart_postgres
+
+- name: Restart Postgres (Force Apply Configs)
+  service:
+    name: postgresql
+    state: restarted
+  when: inventory_hostname in groups['master']
+
+- name: Create replicator user
+  become_user: postgres
+  postgresql_user:
+    name: replication
+    password: '{{ replicator_password }}'
+    role_attr_flags: REPLICATION
+  when: inventory_hostname in groups['master']
+
+- name: Stop Postgres on Slave
+  service:
+    name: postgresql
+    state: stopped
+  when: inventory_hostname in groups['slave']
+
+- name: Remove Slave Data Directory
+  file:
+    path: /var/lib/postgresql/14/main
+    state: absent
+  when: inventory_hostname in groups['slave']
+
+- name: Clone Data from Master (pg_basebackup)
+  become_user: postgres
+  shell: |
+    pg_basebackup -h {{ master_ip }} -U replication -p 5432 -D /var/lib/postgresql/14/main/ -R -P -w
+  environment:
+    PGPASSWORD: '{{ replicator_password }}'
+  when: inventory_hostname in groups['slave']
+  ignore_errors: yes
+
+- name: Fix permissions on data dir
+  file:
+    path: /var/lib/postgresql/14/main
+    owner: postgres
+    group: postgres
+    mode: '0700'
+    state: directory
+    recurse: yes
+  when: inventory_hostname in groups['slave']
+
+- name: Start Postgres on Slave
+  service:
+    name: postgresql
+    state: started
+  when: inventory_hostname in groups['slave']

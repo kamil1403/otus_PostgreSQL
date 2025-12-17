@@ -1,0 +1,33 @@
+---
+- name: Postgres Setup
+  hosts: all
+  become: yes
+  tasks:
+  - name: Install base tools
+    apt:
+      name:
+        - vim
+        - telnet
+        - python3-pexpect
+        - python3-psycopg2
+        - acl
+      state: present
+      update_cache: true
+
+- name: Install Postgres 14
+  hosts: master, slave
+  become: yes
+  roles:
+   - install_postgres
+
+- name: Configure Replication
+  hosts: master, slave
+  become: yes
+  roles:
+   - postgres_replication
+
+- name: Configure Barman
+  hosts: all
+  become: yes
+  roles:
+   - install_barman
