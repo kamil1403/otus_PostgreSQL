@@ -36,7 +36,7 @@
 
 Развертывание ВМ описано в `Vagrantfile`.
 
-```ruby
+```bash
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
@@ -60,41 +60,33 @@ Vagrant.configure("2") do |config|
     end
   end
 end
-<a id="two"></a>
+```
 
+<a id="two"></a>
 🛠️ Шаг 2 - Настройка Ansible
 Конфигурация выполняется через Ansible. Особенность: Используется PostgreSQL 14, поэтому вместо устаревшего recovery.conf применяется механизм standby.signal.
-
 Запуск:
-
-Bash
-
+```bash
 cd ansible
 ansible-playbook -i hosts provision.yml
 Структура ролей:
-
 install_postgres: Установка пакетов.
-
 postgres_replication: Настройка Master, создание юзера репликации, клонирование данных на Slave (pg_basebackup -R).
-
 install_barman: Настройка сервера бэкапов, SSH-ключей, .pgpass и конфигурации стриминга.
+```
 
 <a id="three"></a>
-
 🔍 Шаг 3 - Проверка
 1. Проверка репликации (на Master):
-
-Bash
-
+```bash
 vagrant ssh node1
 sudo -u postgres psql -c "select * from pg_stat_replication;"
 Ожидаем: state = streaming
-
+```
 2. Проверка Barman (на сервере Backup):
-
-Bash
-
+```bash
 vagrant ssh barman
 sudo su - barman
 barman check node1
 barman backup node1
+```
